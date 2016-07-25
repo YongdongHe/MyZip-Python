@@ -91,4 +91,12 @@ print "CCL huffman hash map:"
 huffman_map1 = getMapOfCL1(CL1)
 print huffman_map1
 for code in huffman_map1.keys():
-	print "%s -> %d"%(code,huffman_map1[code])
+	if huffman_map1[code] < 256:
+		print "%s -> %c"%(code,chr(huffman_map1[code]))
+	else:
+		print "%s -> %d"%(code,huffman_map1[code])
+
+print '\n\n\n***************CL2'
+cl2_offset = index
+NUM_OF_CL2 = valueOf(HDIST) + 1
+print "num of ccl: %d"%NUM_OF_CL2
