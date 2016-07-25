@@ -66,6 +66,7 @@ def getMapOfCL1(cl1):
 	if len(cl1) != 285 :
 		print 'inflating %d zeros:%d to 285'%(285-len(cl1),len(cl1))
 	cl1 += [0] * (285-len(cl1))
+	print cl1
 	bl_count = {}
 	MAX_BITS = max(cl1)
 	#为所有2到最大的code length的count都置0
@@ -83,8 +84,8 @@ def getMapOfCL1(cl1):
 	map_cl1 = {}
 	#max_code就是cl1的长度
 	for n in range(0,len(cl1)):
-		if n <= 255:
-			#说明此处是literal部分
+		if n <= 256:
+			#说明此处是literal部分,256是结尾符，也当作literal处理
 			n_clen = cl1[n]
 			if n_clen != 0:
 				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) 
@@ -94,13 +95,14 @@ def getMapOfCL1(cl1):
 			#此处是length部分
 			n_clen = cl1[n]
 			if n_clen != 0:
-				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-255)
+				print "length: %d"%n
+				#257代表3，所以减去的值应该是254
+				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-254)
 				map_cl1[huffman_code] = n
 				next_code[n_clen] += 1
 	return map_cl1
 
 def getExtraBitsOfLength(cl1_length):
-	print cl1_length
 	if cl1_length in range(3,11):
 		return ""
 	elif cl1_length in range(11,19):
