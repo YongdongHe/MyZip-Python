@@ -57,17 +57,65 @@ def getMapOfCCL(ccl):
 	for n in range(0,len(ccl)):
 		n_clen = ccl[n]
 		if n_clen != 0:
-			huffman_code = next_code[n_clen]
-			if huffman_code == 0:
-				map_ccl["00"] = n 
-			elif huffman_code == 1:
-				map_ccl["01"] = n 
-			else:
-				map_ccl[bin(huffman_code)[2:]] = n 
+			#n_clen即为长度
+			huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) 
+			map_ccl[huffman_code] = n 
 			next_code[n_clen] += 1
 	return map_ccl
+def getMapOfCL1(cl1):
+	if len(cl1) != 285 :
+		print 'inflating %d zeros:%d to 285'%(285-len(cl1),len(cl1))
+	cl1 += [0] * (285-len(cl1))
+	bl_count = {}
+	MAX_BITS = max(cl1)
+	#为所有2到最大的code length的count都置0
+	for bl in range(0,MAX_BITS+1):
+		bl_count[bl] = 0
+	#统计个数
+	for bl in cl1:
+		bl_count[bl] += 1
+	code = 0;
+	bl_count[0] = 0;
+	next_code = [0] * (MAX_BITS + 1)
+	for bits in range(1,MAX_BITS+1):
+		code = (code + bl_count[bits-1])<<1
+		next_code[bits] = code
+	map_cl1 = {}
+	#max_code就是cl1的长度
+	for n in range(0,len(cl1)):
+		if n <= 255:
+			#说明此处是literal部分
+			n_clen = cl1[n]
+			if n_clen != 0:
+				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) 
+				map_cl1[huffman_code] = n 
+				next_code[n_clen] += 1
+		else:
+			#此处是length部分
+			n_clen = cl1[n]
+			if n_clen != 0:
+				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-255)
+				map_cl1[huffman_code] = n
+				next_code[n_clen] += 1
+	return map_cl1
 
-MARK16 = 16
-MARK17 = 17
-MARK18 = 18
+def getExtraBitsOfLength(cl1_length):
+	print cl1_length
+	if cl1_length in range(3,11):
+		return ""
+	elif cl1_length in range(11,19):
+		return "%d"%(1-cl1_length%2)
+	elif cl1_length in range(19,35):
+		return getInfatingBinaray((cl1_length - 19)%4,2)
+	elif cl1_length in range(35,67):
+		return getInfatingBinaray((cl1_length - 35)%8,3)
+	elif cl1_length in range(47,131):
+		return getInfatingBinaray((cl1_length - 47)%16,4)
+	elif cl1_length in range(131,258):
+		return getInfatingBinaray((cl1_length - 131)%32,5)
+	elif cl1_length == 258:
+		return ""
 
+def getInfatingBinaray(value,num_of_bits):
+	inflating_zeros = num_of_bits - len(bin(value)[2:])
+	return '0' * inflating_zeros + bin(value)[2:]

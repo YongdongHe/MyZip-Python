@@ -22,7 +22,9 @@ print "HLIT: %s"%HLIT
 print "HDIST: %s"%HDIST
 print "HCLEN: %s"%HCLEN
 file_data_offset = 17
+print '\n\n\n***************CLL'
 NUM_OF_CCL = valueOf(HCLEN) + 4
+print "num of ccl: %d"%NUM_OF_CCL
 CCLbits = s[file_data_offset : file_data_offset + NUM_OF_CCL * 3]
 
 CCL = printCCL(CCLbits,NUM_OF_CCL)
@@ -38,8 +40,10 @@ print huffman_map3
 for code in huffman_map3.keys():
 	print "%s -> %d"%(code,huffman_map3[code])
 
+print '\n\n\n***************CL1'
 cl1_offset = file_data_offset  + NUM_OF_CCL * 3
 NUM_OF_CL1 = valueOf(HLIT) + 257
+print "num of cl1: %d"%NUM_OF_CL1 
 cl1_count = 0
 #从偏移处开始搜索
 index = cl1_offset
@@ -80,6 +84,11 @@ while cl1_count < NUM_OF_CL1:
 	 		CL1.append(cl1_value)
 	 		cl1_count += 1
 	 	buff = ""
-print "CL1:"
+print "\nCL1:"
 print CL1
 print len(CL1)
+print "CCL huffman hash map:"
+huffman_map1 = getMapOfCL1(CL1)
+print huffman_map1
+for code in huffman_map1.keys():
+	print "%s -> %d"%(code,huffman_map1[code])
