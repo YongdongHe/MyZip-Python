@@ -1,10 +1,16 @@
 from MyZipUtils import *
-str1 = "110"
-print 2>>1
-node = [0]*10
-node += [1]*2
-print int("01",2)
-print format(3 , 'b')
-print 2 in range(0,2)
-print '0' * 3
-print getExtraBitsOfLength(2)
+import struct
+print ord('t')
+a = "hello"
+output = open('test', 'wb')
+ot = [1,2]
+o = struct.pack('b',-127)
+output.write(o)
+output.flush()
+output.close()
+a = [1,2]
+b = a
+b[0] = 3
+l = [2,3,4]
+print l.pop(0)
+print l
