@@ -1,5 +1,6 @@
 #coding=utf8
 #distance 分区
+import struct
 DISTANCE_GROUP_CODE = [
 		[1],
 		[2],
@@ -127,8 +128,8 @@ def getMapOfCL1(cl1):
 			#此处是length部分
 			n_clen = cl1[n]
 			if n_clen != 0:
-				#257代表3，所以减去的值应该是254
-				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-254)
+				#257代表3，所以减去的值应该是254,并且拓展部分需要低比特优先，所以用[::-1]逆序
+				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-254)[::-1]
 				map_cl1[huffman_code] = n
 				next_code[n_clen] += 1
 	return map_cl1
@@ -172,7 +173,8 @@ def getMapOfCL2(cl2):
 		if n_clen != 0:
 			distance_group = getDistanceGroupByCode(n)
 			for distance in distance_group:
-				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + " " +  getExtraBitsOfDistance(distance)
+				#拓展位需要低比特优先
+				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) +  getExtraBitsOfDistance(distance)[::-1]
 				map_cl2[huffman_code] = distance
 			next_code[n_clen] += 1
 	return map_cl2
@@ -219,3 +221,6 @@ def getExtraBitsOfDistance(cl2_distance):
 	else:
 		raise Exception("Invalid Distance")
 
+def getBytesFromIntList(int_list):
+	#value in list must be -128 to 127
+	return struct.pack('b'*len(int_list),*int_list)
