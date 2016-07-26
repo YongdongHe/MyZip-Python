@@ -1,18 +1,11 @@
 #coding=utf8
 from MyZipUtils import *
-str1 = """00010101 11001010 11010001 00001101 10000000 00100000 00001100 01000101
-11010001 01010101 11011110 00000000 11000110 00011101 00011100 10100101
-11001010 00110011 00010000 01001011 01001001 01101000 11010101 10110000
-10111101 11111000 01110001 01111111 01101110 11001110 11100110 10101000
-10110100 00101000 11001101 10011000 00100000 01111011 01111011 10111000
-01000100 01100110 00100111 01100100 01010110 11000101 00000110 10101110
-01100010 11001001 11010001 01001110 10111100 10100101 01010011 11101001
-00001110 00011111 00011110 10101100 11110011 11111101 00010010 10010001
-11000101 01110000"""
+from MyZipData import *
 s = ""
-for item in str.split(str1):
+for item in str.split(TEST_DATA):
 	s += item[::-1]
-print s
+s = s[:TEST_DATA_SIZE*8]
+print len(s)
 Header = s[0:1] + s[2] + s[1]
 HLIT = s[3:8][::-1]
 HDIST = s[8:13][::-1]
@@ -87,16 +80,155 @@ while cl1_count < NUM_OF_CL1:
 print "\nCL1:"
 print CL1
 print len(CL1)
-print "CCL huffman hash map:"
+print "CL1 huffman hash map:(length and literal)"
 huffman_map1 = getMapOfCL1(CL1)
-print huffman_map1
+# print huffman_map1
+# for code in huffman_map1.keys():
+# 	if huffman_map1[code] < 256:
+# 		print "%s -> %c"%(code,chr(huffman_map1[code]))
+# 	else:
+# 		print "%s -> %d"%(code,huffman_map1[code])
+huffman_map1_output = open('huffman_map1.txt', 'w')		
 for code in huffman_map1.keys():
 	if huffman_map1[code] < 256:
-		print "%s -> %c"%(code,chr(huffman_map1[code]))
+		huffman_map1_output.write(" %s -> %c \n"%(code,chr(huffman_map1[code])))
 	else:
-		print "%s -> %d"%(code,huffman_map1[code])
+		huffman_map1_output.write(" %s -> %d \n"%(code,huffman_map1[code]))	
+huffman_map1_output.flush()
+huffman_map1_output.close()
 
 print '\n\n\n***************CL2'
 cl2_offset = index
 NUM_OF_CL2 = valueOf(HDIST) + 1
-print "num of ccl: %d"%NUM_OF_CL2
+print "num of cl2: %d"%NUM_OF_CL2
+
+cl2_count = 0
+index = cl2_offset
+buff = ""
+CL2 = []
+
+while cl2_count < NUM_OF_CL2:
+	buff += s[index]
+	index += 1
+	#看当前有没有对应的huffman_map3中的项
+	if huffman_map3.has_key(buff):
+		cl2_value = huffman_map3[buff]
+		print cl2_value,
+		if cl2_value == 16:
+			flag_16 = s[index:index+2]
+			print flag_16,
+			index += 2
+			repeat_value = CL2[-1]
+			repeat_times = ( 3 + valueOf(flag_16[::-1]))
+			CL2 += [repeat_value] *  repeat_times
+			cl2_count += repeat_times
+		elif cl2_value == 17:
+			flag_17 = s[index:index+3]
+			print flag_17,
+			index += 3
+			repeat_value = 0
+			repeat_times = ( 3 + valueOf(flag_17[::-1]))
+			CL2 += [repeat_value] * repeat_times
+			cl2_count += repeat_times
+		elif cl2_value == 18:
+			flag_18 = s[index:index+7]
+			print flag_18,
+			index += 7
+			repeat_value = 0
+			repeat_times = ( 11 + valueOf(flag_18[::-1]))
+			CL2 += [repeat_value] * repeat_times
+			cl2_count += repeat_times
+		else:
+			CL2.append(cl2_value)
+			cl2_count += 1
+		buff = ""
+print "CL2"
+print CL2
+print "CL2 huffman hash map:(distance)"
+huffman_map2 = getMapOfCL2(CL2)
+#print huffman_map2
+# for code in huffman_map2.keys():
+# 	print "%s -> %d"%(code,huffman_map2[code])
+huffman_map2_output = open('huffman_map2.txt', 'w')
+for code in huffman_map2.keys():
+	huffman_map2_output.write(" %s -> %d \n"%(code,huffman_map2[code]))
+huffman_map2_output.flush()
+huffman_map2_output.close()
+
+#数据段解码
+#用于输出
+outputBuff = []
+dictionary = []
+dictionarySize = 32768
+outputBuffSize = 1
+output = open('data.txt', 'wb')
+def outputByte(value_int):
+	#value_int在0到255之间，代表一个字节
+	if value_int > 127:
+		#如果大于127需要转为-128到-1
+		value_int = value_int - 256
+	#加入到输出缓冲区
+	outputBuff.append(value_int)
+	#加入到字典
+	dictionary.append(value_int)
+	if len(dictionary) > dictionarySize:
+		#保持字典大小,移除已经不需要在字典里的项
+		dictionary.pop(0)
+	if len(outputBuff) >= outputBuffSize or value_int == 256:
+		#说明缓冲区满或者已经到结尾，则进行输出
+		output.write(getBytesFromIntList(outputBuff))
+		outputBuff[:]=[]
+def outputByteWithDistanceAndLength(v_distance,v_length):
+	if v_distance > len(dictionary):
+		raise Exception("Distance range out of the size of dictionary.")
+	segment_start_index = len(dictionary) - v_distance
+	segment_end_index = segment_start_index + v_length
+	value_segment = dictionary[segment_start_index:segment_end_index]
+	#print "dst-len-rs: "
+	# for value in value_segment:
+	# 	 print chr(value),
+	for value in value_segment:
+		#print "data:%d" % value
+		outputByte(value)
+
+data_offset = index
+buff = ""
+data = []
+index = data_offset
+while index <= len(s) - 1:
+	buff += s[index]
+	index += 1
+	#看是否已可以读取length或literal
+	if huffman_map1.has_key(buff):
+		value = huffman_map1[buff]
+		if value == 256 :
+			#解码已经结束了
+			print 'end'
+			outputByte(value)
+			break
+		elif value <= 255:
+			#说明是literal，则直接进行输出
+			print "leteral(%s to %d)"%(buff,value) + chr(value)
+			outputByte(value)
+		elif value >= 257 and value <= 512:
+			#说说明是length，而且后面跟着一个distance，一并取出
+			v_length = value - 254
+			print "length(%s to %d)"%(buff,v_length)
+			#用来取出distance用的缓冲区
+			dst_buff = ""
+			while not huffman_map2.has_key(dst_buff):
+				#一直取数，直到取出了可以被认为是distance的值为止
+				dst_buff += s[index]
+				index += 1
+			v_distance = huffman_map2[dst_buff]
+			print "distance(%s to %d)"%(dst_buff,v_distance)
+			outputByteWithDistanceAndLength(v_distance=v_distance,v_length=v_length)
+		else:
+			print value
+			raise Exception("A value bigger than 256 , but not a distance")
+		buff = ""
+print index
+print len(s)
+print buff
+output.flush()
+output.close()
