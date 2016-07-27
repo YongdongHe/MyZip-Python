@@ -1,6 +1,9 @@
 #coding=utf8
 from MyZipUtils import *
-from MyZipData import *
+#from MyZipData import *
+from DeflateData import *
+#from EnglishData import *
+#from ZhihuData import *
 import sys
 s = ""
 for item in str.split(TEST_DATA):
@@ -11,6 +14,7 @@ Header = s[0:1] + s[2] + s[1]
 HLIT = s[3:8][::-1]
 HDIST = s[8:13][::-1]
 HCLEN = s[13:17][::-1]
+huffman_tree_outputfile = open(CONFIG_OUTPUT_FILENAME + "huffman_tree" , 'w')
 print "Header: %s"%Header
 print "HLIT: %s"%HLIT
 print "HDIST: %s"%HDIST
@@ -92,7 +96,8 @@ huffman_map1 = getMapOfCL1(CL1)
 huffman_map1_output = open('huffman_map1.txt', 'w')		
 for code in huffman_map1.keys():
 	if huffman_map1[code] < 256:
-		huffman_map1_output.write(" %s -> %c \n"%(code,chr(huffman_map1[code])))
+		#huffman_map1_output.write(" %s -> %c \n"%(code,chr(huffman_map1[code])))
+		huffman_map1_output.write(" %s -> %d \n"%(code,huffman_map1[code]))
 	else:
 		huffman_map1_output.write(" %s -> %d \n"%(code,huffman_map1[code]))	
 huffman_map1_output.flush()
