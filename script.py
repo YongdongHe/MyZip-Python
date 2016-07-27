@@ -162,7 +162,7 @@ outputBuff = []
 dictionary = []
 dictionarySize = 32768
 outputBuffSize = 1
-output = open('data.txt', 'wb')
+output = open(CONFIG_OUTPUT_FILENAME, 'wb')
 def outputByte(value_int):
 	#碰到结尾则立即输出
 	if value_int == 256:
