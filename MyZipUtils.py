@@ -35,6 +35,35 @@ DISTANCE_GROUP_CODE = [
 	]
 
 LENGTH_GROUP_CODE = [
+		[3],
+		[4],
+		[5],
+		[6],
+		[7],
+		[8],
+		[9],
+		[10],
+		range(11,13),
+		range(13,15),
+		range(15,17),
+		range(17,19),
+		range(19,23),
+		range(23,27),
+		range(27,31),
+		range(31,35),
+		range(35,43),
+		range(43,51),
+		range(51,59),
+		range(59,67),
+		range(67,83),
+		range(83,99),
+		range(99,115),
+		range(115,131),
+		range(131,163),
+		range(163,195),
+		range(195,227),
+		range(227,258),
+		[258]
 ]
 def valueOf(bitStrArg):
 	return int(bitStrArg,2)
@@ -126,11 +155,15 @@ def getMapOfCL1(cl1):
 				next_code[n_clen] += 1
 		else:
 			#此处是length部分
-			n_clen = cl1[n]
+			n_clen = cl1[n]	
 			if n_clen != 0:
-				#257代表3，所以减去的值应该是254,并且拓展部分需要低比特优先，所以用[::-1]逆序
-				huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) + getExtraBitsOfLength(n-254)[::-1]
-				map_cl1[huffman_code] = n
+				#257代表3，在code length里
+				length_group = getLengthGroupByCode(n-257)
+				print length_group
+				for length_item in length_group:
+					#前置huffman需要补位,n_clen为代表每个区间的code的长度,拓展位需要低比特优先
+					huffman_code = getInfatingBinaray(next_code[n_clen],n_clen) +  getExtraBitsOfLength(length_item)[::-1]
+					map_cl1[huffman_code] = length_item + 254
 				next_code[n_clen] += 1
 	return map_cl1
 
