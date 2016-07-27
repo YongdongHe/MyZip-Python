@@ -164,6 +164,10 @@ dictionarySize = 32768
 outputBuffSize = 1
 output = open('data.txt', 'wb')
 def outputByte(value_int):
+	#碰到结尾则立即输出
+	if value_int == 256:
+		output.write(getBytesFromIntList(outputBuff))
+		return
 	#value_int在0到255之间，代表一个字节
 	if value_int > 127:
 		#如果大于127需要转为-128到-1
@@ -177,7 +181,7 @@ def outputByte(value_int):
 	if len(dictionary) > dictionarySize:
 		#保持字典大小,移除已经不需要在字典里的项
 		dictionary.pop(0)
-	if len(outputBuff) >= outputBuffSize or value_int == 256:
+	if len(outputBuff) >= outputBuffSize:
 		#说明缓冲区满或者已经到结尾，则进行输出
 		output.write(getBytesFromIntList(outputBuff))
 		outputBuff[:]=[]
