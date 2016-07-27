@@ -1,6 +1,7 @@
 #coding=utf8
 from MyZipUtils import *
 from MyZipData import *
+import sys
 s = ""
 for item in str.split(TEST_DATA):
 	s += item[::-1]
@@ -171,6 +172,8 @@ def outputByte(value_int):
 	outputBuff.append(value_int)
 	#加入到字典
 	dictionary.append(value_int)
+	#挨个输出已经解码的数据
+	sys.stdout.write(struct.pack('b',value_int))
 	if len(dictionary) > dictionarySize:
 		#保持字典大小,移除已经不需要在字典里的项
 		dictionary.pop(0)
@@ -182,13 +185,8 @@ def outputByteWithDistanceAndLength(v_distance,v_length):
 	if v_distance > len(dictionary):
 		raise Exception("Distance range out of the size of dictionary.")
 	segment_start_index = len(dictionary) - v_distance
-	segment_end_index = segment_start_index + v_length
-	value_segment = dictionary[segment_start_index:segment_end_index]
-	#print "dst-len-rs: "
-	# for value in value_segment:
-	# 	 print chr(value),
-	for value in value_segment:
-		#print "data:%d" % value
+	for segment_offset in range(v_length):
+		value = dictionary[segment_start_index + segment_offset]
 		outputByte(value)
 
 data_offset = index
@@ -208,12 +206,12 @@ while index <= len(s) - 1:
 			break
 		elif value <= 255:
 			#说明是literal，则直接进行输出
-			print "leteral(%s to %d)"%(buff,value) + chr(value)
+			#print "leteral(%s to %d)"%(buff,value) + chr(value)
 			outputByte(value)
 		elif value >= 257 and value <= 512:
 			#说说明是length，而且后面跟着一个distance，一并取出
 			v_length = value - 254
-			print "length(%s to %d)"%(buff,v_length)
+			#print "length(%s to %d)"%(buff,v_length)
 			#用来取出distance用的缓冲区
 			dst_buff = ""
 			while not huffman_map2.has_key(dst_buff):
@@ -221,7 +219,7 @@ while index <= len(s) - 1:
 				dst_buff += s[index]
 				index += 1
 			v_distance = huffman_map2[dst_buff]
-			print "distance(%s to %d)"%(dst_buff,v_distance)
+			#print "distance(%s to %d)"%(dst_buff,v_distance)
 			outputByteWithDistanceAndLength(v_distance=v_distance,v_length=v_length)
 		else:
 			print value
