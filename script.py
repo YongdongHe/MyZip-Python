@@ -1,20 +1,25 @@
 #coding=utf8
 from MyZipUtils import *
 #from MyZipData import *
-from DeflateData import *
+#from DeflateData import *
 #from EnglishData import *
-#from ZhihuData import *
+# from ZhihuZuidaData import *
+# from ZhihuFastData import *
+# from ZhihuBiaozhunData import *
+# from ZhihuJixianData import *
+from yybData import *
 import sys
 s = ""
 for item in str.split(TEST_DATA):
 	s += item[::-1]
+print s
 s = s[:TEST_DATA_SIZE*8]
 print len(s)
-Header = s[0:1] + s[2] + s[1]
+Header = s[0] + s[2] + s[1]
 HLIT = s[3:8][::-1]
 HDIST = s[8:13][::-1]
 HCLEN = s[13:17][::-1]
-huffman_tree_outputfile = open(CONFIG_OUTPUT_FILENAME + "huffman_tree" , 'w')
+huffman_tree_outputfile = open("huffman_tree" + CONFIG_OUTPUT_FILENAME  , 'w')
 print "Header: %s"%Header
 print "HLIT: %s"%HLIT
 print "HDIST: %s"%HDIST
@@ -31,7 +36,10 @@ print CCL
 CCL = replaceCCL(CCL)
 print "Current CCL:"
 print CCL
-
+#输出CLL到文件
+huffman_tree_outputfile.write("CCL\n")
+huffman_tree_outputfile.write(str(CCL))
+huffman_tree_outputfile.write("\n")
 print "CCL huffman hash map:"
 huffman_map3 = getMapOfCCL(CCL)
 print huffman_map3
@@ -53,7 +61,7 @@ while cl1_count < NUM_OF_CL1:
 	#看当前有没有对应的huffman_map3中的项
 	if huffman_map3.has_key(buff):
 	 	cl1_value = huffman_map3[buff]
-	 	print cl1_value,
+	 	print "%s(%d)"%(buff,cl1_value),
 	 	if cl1_value == 16:
 	 		flag_16 = s[index:index+2]
 	 		print flag_16,
@@ -61,6 +69,7 @@ while cl1_count < NUM_OF_CL1:
 	 		repeat_value = CL1[-1]
 	 		repeat_times = ( 3 + valueOf(flag_16[::-1]))
 	 		CL1 += [repeat_value] *  repeat_times
+	 		print '%d 个 %d'%(repeat_times,repeat_value)
 	 		cl1_count += repeat_times
 	 	elif cl1_value == 17:
 	 		flag_17 = s[index:index+3]
@@ -69,6 +78,7 @@ while cl1_count < NUM_OF_CL1:
 	 		repeat_value = 0
 	 		repeat_times = ( 3 + valueOf(flag_17[::-1]))
 	 		CL1 += [repeat_value] * repeat_times
+	 		print '%d 个 %d'%(repeat_times,repeat_value)
 	 		cl1_count += repeat_times
 	 	elif cl1_value == 18:
 	 		flag_18 = s[index:index+7]
@@ -77,13 +87,18 @@ while cl1_count < NUM_OF_CL1:
 	 		repeat_value = 0
 	 		repeat_times = ( 11 + valueOf(flag_18[::-1]))
 	 		CL1 += [repeat_value] * repeat_times
+	 		print '%d 个 %d'%(repeat_times,repeat_value)
 	 		cl1_count += repeat_times
 	 	else:
 	 		CL1.append(cl1_value)
-	 		cl1_count += 1
+	 		cl1_count += 1 
 	 	buff = ""
+print s[index:]
 print "\nCL1:"
 print CL1
+huffman_tree_outputfile.write("CL1\n")
+huffman_tree_outputfile.write(str(CL1))
+huffman_tree_outputfile.write("\n")
 print len(CL1)
 print "CL1 huffman hash map:(length and literal)"
 huffman_map1 = getMapOfCL1(CL1)
@@ -97,7 +112,7 @@ huffman_map1_output = open('huffman_map1.txt', 'w')
 for code in huffman_map1.keys():
 	if huffman_map1[code] < 256:
 		#huffman_map1_output.write(" %s -> %c \n"%(code,chr(huffman_map1[code])))
-		huffman_map1_output.write(" %s -> %d \n"%(code,huffman_map1[code]))
+		huffman_map1_output.write(" %s -> %s \n"%(code,chr(huffman_map1[code])))
 	else:
 		huffman_map1_output.write(" %s -> %d \n"%(code,huffman_map1[code]))	
 huffman_map1_output.flush()
@@ -150,6 +165,9 @@ while cl2_count < NUM_OF_CL2:
 		buff = ""
 print "CL2"
 print CL2
+huffman_tree_outputfile.write("CL2\n")
+huffman_tree_outputfile.write(str(CL2))
+huffman_tree_outputfile.write("\n")
 print "CL2 huffman hash map:(distance)"
 huffman_map2 = getMapOfCL2(CL2)
 #print huffman_map2
@@ -182,7 +200,7 @@ def outputByte(value_int):
 	#加入到字典
 	dictionary.append(value_int)
 	#挨个输出已经解码的数据
-	sys.stdout.write(struct.pack('b',value_int))
+	# sys.stdout.write(struct.pack('b',value_int))
 	if len(dictionary) > dictionarySize:
 		#保持字典大小,移除已经不需要在字典里的项
 		dictionary.pop(0)
@@ -216,11 +234,16 @@ while index <= len(s) - 1:
 		elif value <= 255:
 			#说明是literal，则直接进行输出
 			#print "leteral(%s to %d)"%(buff,value) + chr(value)
+			value_print = value
+			if value_print > 127:
+				value_print = value_print - 127
+			print "%s(%s)"%(buff,struct.pack('b',value_print)),
 			outputByte(value)
 		elif value >= 257 and value <= 512:
 			#说说明是length，而且后面跟着一个distance，一并取出
 			v_length = value - 254
 			#print "length(%s to %d)"%(buff,v_length)
+			print "%s(%d-length:%d)"%(buff,value,v_length),
 			#用来取出distance用的缓冲区
 			dst_buff = ""
 			while not huffman_map2.has_key(dst_buff):
@@ -228,6 +251,7 @@ while index <= len(s) - 1:
 				dst_buff += s[index]
 				index += 1
 			v_distance = huffman_map2[dst_buff]
+			print "%s(distance:%d)"%(dst_buff,v_distance),
 			#print "distance(%s to %d)"%(dst_buff,v_distance)
 			outputByteWithDistanceAndLength(v_distance=v_distance,v_length=v_length)
 		else:
