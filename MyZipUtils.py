@@ -176,8 +176,8 @@ def getExtraBitsOfLength(cl1_length):
 		return getInfatingBinaray((cl1_length - 19)%4,2)
 	elif cl1_length in range(35,67):
 		return getInfatingBinaray((cl1_length - 35)%8,3)
-	elif cl1_length in range(47,131):
-		return getInfatingBinaray((cl1_length - 47)%16,4)
+	elif cl1_length in range(67,131):
+		return getInfatingBinaray((cl1_length - 67)%16,4)
 	elif cl1_length in range(131,258):
 		return getInfatingBinaray((cl1_length - 131)%32,5)
 	elif cl1_length == 258:
