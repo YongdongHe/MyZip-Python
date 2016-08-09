@@ -1,6 +1,6 @@
 #coding=utf8
 from MyZipUtils import *
-from MyZipData import *
+#from MyZipData import *
 from DeflateData import *
 # from EnglishData import *
 # from ZhihuZuidaData import *
