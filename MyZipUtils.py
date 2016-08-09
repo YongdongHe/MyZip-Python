@@ -119,6 +119,8 @@ def getMapOfCCL(ccl):
 		code = (code + bl_count[bits-1])<<1
 		next_code[bits] = code
 	map_ccl = {}
+	print 'nextcode'
+	print next_code
 	#max_code就是ccl的长度
 	for n in range(0,len(ccl)):
 		n_clen = ccl[n]
@@ -140,10 +142,13 @@ def getMapOfCL1(cl1):
 	code = 0;
 	bl_count[0] = 0;
 	next_code = [0] * (MAX_BITS + 1)
+
 	for bits in range(1,MAX_BITS+1):
 		code = (code + bl_count[bits-1])<<1
 		next_code[bits] = code
 	map_cl1 = {}
+	print 'next_code'
+	print next_code
 	#max_code就是cl1的长度
 	for n in range(0,len(cl1)):
 		if n <= 256:
@@ -176,8 +181,8 @@ def getExtraBitsOfLength(cl1_length):
 		return getInfatingBinaray((cl1_length - 19)%4,2)
 	elif cl1_length in range(35,67):
 		return getInfatingBinaray((cl1_length - 35)%8,3)
-	elif cl1_length in range(47,131):
-		return getInfatingBinaray((cl1_length - 47)%16,4)
+	elif cl1_length in range(67,131):
+		return getInfatingBinaray((cl1_length - 67)%16,4)
 	elif cl1_length in range(131,258):
 		return getInfatingBinaray((cl1_length - 131)%32,5)
 	elif cl1_length == 258:
@@ -250,7 +255,7 @@ def getExtraBitsOfDistance(cl2_distance):
 	elif cl2_distance in range(8193,16385):
 		return getInfatingBinaray((cl2_distance - 8193)%4096,12)
 	elif cl2_distance in range(16385,32768):
-		return getInfatingBinaray((cl2_distance - 4097)%8192,13)
+		return getInfatingBinaray((cl2_distance - 16385)%8192,13)
 	else:
 		raise Exception("Invalid Distance")
 
