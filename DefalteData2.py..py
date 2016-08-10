@@ -1,0 +1,4 @@
+CONFIG_OUTPUT_FILENAME = 'deflaterfc2.txt'
+TEST_DATA_SIZE = 2206
+TEST_DATA = """
+"""

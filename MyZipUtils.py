@@ -254,7 +254,7 @@ def getExtraBitsOfDistance(cl2_distance):
 		return getInfatingBinaray((cl2_distance - 4097)%2048,11)
 	elif cl2_distance in range(8193,16385):
 		return getInfatingBinaray((cl2_distance - 8193)%4096,12)
-	elif cl2_distance in range(16385,32768):
+	elif cl2_distance in range(16385,32769):
 		return getInfatingBinaray((cl2_distance - 16385)%8192,13)
 	else:
 		raise Exception("Invalid Distance")
