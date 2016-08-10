@@ -22,6 +22,8 @@ outputBuff = []
 dictionary = []
 dictionarySize = 32768
 outputBuffSize = 1
+#输出文件初始化
+output = open(CONFIG_OUTPUT_FILENAME, 'wb')
 while not isEND:
 	Header = s[0] + s[2] + s[1]
 	if s[0] == '1':
@@ -191,7 +193,6 @@ while not isEND:
 
 	#数据段解码
 	#用于输出
-	output = open(CONFIG_OUTPUT_FILENAME, 'wb')
 	def outputByte(value_int):
 		#碰到结尾则立即输出
 		if value_int == 256:
@@ -268,5 +269,5 @@ while not isEND:
 	print len(s)
 	print buff
 	s = s[index:]
-	output.flush()
-	output.close()
+output.flush()
+output.close()
