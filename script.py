@@ -2,7 +2,6 @@
 from MyZipUtils import *
 # from MyZipData import *
 from DeflateData import *
-# from DeflateData2 import *
 # from EnglishData import *
 # from ZhihuZuidaData import *
 # from ZhihuFastData import *
@@ -207,8 +206,8 @@ while not isEND:
 		#加入到字典
 		dictionary.append(value_int)
 		#挨个输出已经解码的数据
-		#sys.stdout.write(struct.pack('b',value_int))
-		if len(dictionary) > dictionarySize:
+		sys.stdout.write(struct.pack('b',value_int))
+		while len(dictionary) > dictionarySize:
 			#保持字典大小,移除已经不需要在字典里的项
 			dictionary.pop(0)
 		if len(outputBuff) >= outputBuffSize:
@@ -219,8 +218,10 @@ while not isEND:
 		if v_distance > len(dictionary):
 			raise Exception("Distance range out of the size of dictionary.")
 		segment_start_index = len(dictionary) - v_distance
+		out_values = []
 		for segment_offset in range(v_length):
-			value = dictionary[segment_start_index + segment_offset]
+			out_values.append(dictionary[segment_start_index + segment_offset % v_distance])
+		for value in out_values:
 			outputByte(value)
 
 	data_offset = index
@@ -244,13 +245,13 @@ while not isEND:
 				value_print = value
 				if value_print > 127:
 					value_print = value_print - 128
-				print "%s(%s)"%(buff,struct.pack('b',value_print)),
+				#print "%s(%s)"%(buff,struct.pack('b',value_print)),
 				outputByte(value)
 			elif value >= 257 and value <= 512:
 				#说说明是length，而且后面跟着一个distance，一并取出
 				v_length = value - 254
 				#print "length(%s to %d)"%(buff,v_length)
-				print "%s(%d-length:%d)"%(buff,value,v_length),
+				#print "%s(%d-length:%d)"%(buff,value,v_length),
 				#用来取出distance用的缓冲区
 				dst_buff = ""
 				while not huffman_map2.has_key(dst_buff):
@@ -258,8 +259,10 @@ while not isEND:
 					dst_buff += s[index]
 					index += 1
 				v_distance = huffman_map2[dst_buff]
-				print "%s(distance:%d)"%(dst_buff,v_distance),
+				#print "%s(distance:%d)"%(dst_buff,v_distance),
 				#print "distance(%s to %d)"%(dst_buff,v_distance)
+				if v_distance == 1707:
+					l = 1
 				outputByteWithDistanceAndLength(v_distance=v_distance,v_length=v_length)
 			else:
 				print value
